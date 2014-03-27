@@ -1,15 +1,99 @@
-//
-//  b2AStarFindPath.h
-//  ZombiesWillInfectYourFamily
-//
-//  Created by George Guy on 1/24/14.
-//
-//
+/****************************************************************************
+ Copyright (c) 2013-2014 George Guy
+ Copyright (c) 2013-2014 Casey Loufek
+ 
+ http://www.cocos2d-x.org
+ 
+ Permission is hereby granted, free of charge, to any person obtaining a copy
+ of this software and associated documentation files (the "Software"), to deal
+ in the Software without restriction, including without limitation the rights
+ to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ copies of the Software, and to permit persons to whom the Software is
+ furnished to do so, subject to the following conditions:
+ 
+ The above copyright notice and this permission notice shall be included in
+ all copies or substantial portions of the Software.
+ 
+ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ THE SOFTWARE.
+ ****************************************************************************/
+
+/****************************************************************************
+ This is a general purpose positive-weighted A* pathfinding implementation for
+ Box2D. Refer to http://en.wikipedia.org/wiki/A_star for more
+ information on A*.
+ 
+ USAGE:
+ 
+ b2Fixture* pawn = // A fixture from the body representing the agent that
+ // will follow the path. If the agent's body is composed of many small
+ // fixtures, I recommend adding a large sensor fixture encompassing all of
+ // those smaller fixtures to use as the pawn. By default, static fixtures that
+ // would collide with the pawn are considered blocked. Any dynamic fixture
+ // that the pawn would collide with is instead adds weight equal to its
+ // body's mass to the region. Adding weight to a region means that the distance
+ // across it is treated as being that much longer.
+ 
+ b2Vec2 goal = // A point in space to which you want to pathfind.
+ 
+ float courtesy = // A multiplier applied to the weights of all regions
+ // searched. With a higher courtesy, the pathfinder will try harder to find
+ // paths around fixtures with dynamic bodies and fixtures whose category bits
+ // have in common with the heavy bits given to the pathfinder.
+ 
+ short limit = // A cap on the size of any of the data structures used by the
+ // pathfinder. This prevents the algorithm from taking forever, or too long,
+ // if it can't find a path. Depending on the size of the maps and bodies you're
+ // dealing with, start with a value like 512 or so and tweak it for your
+ // purposes until it doesn't lag. A negative value means there's no limit, but
+ // that's not recommended for release versions.
+ 
+ uint16 blockedBits = // A bitvector compared against the category bits of each
+ // fixture found in any region searched during pathfinding. If any fixture has
+ // category bits in common with the pathfinder's blocked bits, its region is
+ // considered blocked, even if the fixture is dynamic or wouldn't normally
+ // collide with the pawn.
+ 
+ uint16 heavyBits = // Similar to the blocked bits, only instead of making a
+ // region blocked if a fixture in it has bits in common with the pawn's
+ // category bits, the pathfinder will add weight to the region equal to the
+ // mass of the "heavy" fixture's body.
+ 
+ // Once you've figured out all those values, go ahead and construct the pathfinder:
+ b2Pathfinder pathfinder = b2Pathfinder(pawn, goal, courtesy, limit, blockedBits, heavyBits);
+ 
+ // Then, have it find the path:
+ pathfinder.aStarFindPath();
+ 
+ // Then, you can retrieve the path to the destination, if any has been found:
+ b2Pathfinder::Path path = pathfinder.tracePathFromDestination();
+ 
+ // If the pathfinder doesn't find a path to the destination, you may still find
+ // it useful to retrieve other data about what it found:
+ if( path.size() == 0 )
+ {
+     // Path to the region found with lowest (path length from start) + (Euclidian distance to goal):
+     path = pathfinder.tracePathFromBest();
+ 
+     // Path to the region with the highest (path length from start) - (Euclidian distance to goal):
+     path = pathfinder.tracePathFromInteresting();
+ 
+     // Path to the region with the highest (path length from start) + (Euclidian distance to goal):
+     path = pathfinder.tracePathFromFar();
+ 
+     // Path to the last region searched before hitting the limit:
+     path = pathfinder.tracePathFromFinal();
+ }
+ ****************************************************************************/
+
 
 #ifndef __ZombiesWillInfectYourFamily__b2AStarFindPath__
 #define __ZombiesWillInfectYourFamily__b2AStarFindPath__
-#include "../../AppMacros.h"
-//#if ENABLE_PATHFINDING
 
 #include "Box2D/Common/b2Math.h"
 #include "Box2D/Collision/b2Collision.h"
@@ -349,5 +433,4 @@ protected:
     Path tracePath(const vertex& end);
 };
 
-//#endif // ENABLE_PATHFINDING
 #endif /* defined(__ZombiesWillInfectYourFamily__b2AStarFindPath__) */

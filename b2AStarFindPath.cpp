@@ -1,12 +1,28 @@
-//
-//  b2AStarFindPath.cpp
-//  ZombiesWillInfectYourFamily
-//
-//  Created by George Guy on 1/24/14.
-//
-//
+/****************************************************************************
+ Copyright (c) 2013-2014 George Guy
+ Copyright (c) 2013-2014 Casey Loufek
+ 
+ http://www.cocos2d-x.org
+ 
+ Permission is hereby granted, free of charge, to any person obtaining a copy
+ of this software and associated documentation files (the "Software"), to deal
+ in the Software without restriction, including without limitation the rights
+ to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ copies of the Software, and to permit persons to whom the Software is
+ furnished to do so, subject to the following conditions:
+ 
+ The above copyright notice and this permission notice shall be included in
+ all copies or substantial portions of the Software.
+ 
+ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ THE SOFTWARE.
+ ****************************************************************************/
 
-//#if ENABLE_PATHFINDING
 #include "b2AStarFindPath.h"
 #include <limits> // for numeric_limits
 #include <utility> // for pair
@@ -236,13 +252,11 @@ bool b2Pathfinder::aStarFindPath()
                 *vertexV != **(**vertexU).previous) &&
                blocked.find(*vertexV) == blocked.end() )
             {
-                
-                
                 spot next = spot(v, distance_through_u, b2Distance(v.GetCenter(), goal), vertexU);
                 
-                if(unexplored.size() > limit ||
+                if((limit >= 0 && (unexplored.size() > limit ||
                    explored.size() > limit ||
-                   blocked.size() > limit ||
+                   blocked.size() > limit)) ||
                    next.region.Contains(goalPoint))
                 {
                     vector<spot> candidates;
@@ -305,9 +319,9 @@ bool b2Pathfinder::aStarFindPath()
         }
         
         if(!unexplored.size() ||
-           unexplored.size() > limit ||
+           ((limit >= 0) && (unexplored.size() > limit ||
            explored.size() > limit ||
-           blocked.size() > limit)
+           blocked.size() > limit)))
         {
 #if VERBOSE
             b2Log("b2AStarFindPath() -- pathfinding exhausted; limit = %u, unexplored = %u, explored = %u, blocked = %u", limit, unexplored.size(), explored.size(), blocked.size());
@@ -335,5 +349,3 @@ float b2Pathfinder::pathLength(const b2Pathfinder::Path& path)
     
     return pathLength;
 }
-
-//#endif // ENABLE_PATHFINDING
